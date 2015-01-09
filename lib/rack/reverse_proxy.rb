@@ -46,7 +46,12 @@ module Rack
       target_request_headers = extract_http_request_headers(source_request.env)
 
       if options[:preserve_host]
-        target_request_headers['HOST'] = "#{uri.host}:#{uri.port}"
+        # Do not add the port number as that causes 'SignatureDoesNotMatch' errors
+        # from AWS S3 since the host header is used for signing URLs.
+        #
+        # Per RFC http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html,
+        # section 14.23, the port is optional
+        target_request_headers['HOST'] = "#{uri.host}"
       end
 
       if options[:x_forwarded_host]
